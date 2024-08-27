@@ -37,13 +37,13 @@ jobs:
       - name: Build and upload
         run: |
 
-          cat << EOF > .pypirc
+          cat << EOF > $HOME/.pypirc
           [distutils]
-          index-servers=rio-innersource-pypi
+          index-servers = rio-innersource-pypi
           [rio-innersource-pypi]
-          repository: $ARTIFACTORY_PUSH_URL
-          username: ${{ secrets.GHA_ARTIFACTORY_USERNAME }}
-          password: ${{ secrets.GHA_ARTIFACTORY_PASSWORD }}
+          repository = $ARTIFACTORY_PUSH_URL
+          username = ${{ secrets.GHA_ARTIFACTORY_USERNAME }}
+          password = ${{ secrets.GHA_ARTIFACTORY_PASSWORD }}
           EOF
 
           python3 setup.py bdist_wheel upload -r rio-innersource-pypi
