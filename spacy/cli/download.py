@@ -169,6 +169,10 @@ def download_model(
     if not base_url.endswith("/"):
         base_url = about.__download_url__ + "/"
     download_url = urljoin(base_url, filename)
+
+    msg.info(f"You are using the Rio Tinto fork of spaCy.")
+    msg.info(f"Downloading model from {download_url}")
+
     if not download_url.startswith(about.__download_url__):
         raise ValueError(f"Download from {filename} rejected. Was it a relative path?")
     pip_args = list(user_pip_args) if user_pip_args is not None else []
