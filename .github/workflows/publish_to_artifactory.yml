@@ -29,7 +29,7 @@ jobs:
       # Install dependencies
       - name: Installs dependencies
         run: |
-          export PIP_INDEX_URL=https://${{ secrets.GHA_ARTIFACTORY_USERNAME }}:$ARTIFACTORY_PULL_URL
+          export PIP_INDEX_URL=https://${{ secrets.GHA_ARTIFACTORY_USERNAME }}:${{ secrets.GHA_ARTIFACTORY_PASSWORD }}@$ARTIFACTORY_PULL_URL
           python3 -m pip install -U pip setuptools wheel --timeout 90
           python3 -m pip install -r requirements.txt --timeout 90
 
