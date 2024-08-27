@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  ARTIFACTORY_PULL_URL: https://artifactory.riotinto.com/artifactory/api/pypi/riotinto-pypi/simple
+  ARTIFACTORY_PULL_URL: artifactory.riotinto.com/artifactory/api/pypi/riotinto-pypi/simple
   ARTIFACTORY_PUSH_URL: https://artifactory.riotinto.com/artifactory/api/pypi/rio-innersource-pypi
 
 permissions:
