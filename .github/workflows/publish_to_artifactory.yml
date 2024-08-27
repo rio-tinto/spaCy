@@ -1,0 +1,46 @@
+name: spaCy Python Package Artifactory Publish
+
+on: [workflow_dispatch]
+
+env:
+  ARTIFACTORY_PULL_URL: https://artifactory.riotinto.com/artifactory/api/pypi/riotinto-pypi/simple
+  ARTIFACTORY_PUSH_URL: https://artifactory.riotinto.com/artifactory/api/pypi/rio-innersource-pypi
+
+permissions:
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
+
+jobs:
+  pypi-consume-and-publish:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      # Install dependencies
+      - name: Installs dependencies
+        run: |
+          export PIP_INDEX_URL=https://${{ secrets.GHA_ARTIFACTORY_USERNAME }}:$ARTIFACTORY_PULL_URL
+          python3 -m pip install -U pip setuptools wheel --timeout 90
+          python3 -m pip install -r requirements.txt --timeout 90
+
+      # Build and upload
+      - name: Build and upload
+        run: |
+
+          cat << EOF > .pypirc
+          [distutils]
+          index-servers=rio-innersource-pypi
+          [rio-innersource-pypi]
+          repository=$ARTIFACTORY_PUSH_URL
+          username=${{ secrets.GHA_ARTIFACTORY_USERNAME }}
+          password=${{ secrets.GHA_ARTIFACTORY_PASSWORD }}
+          EOF
+          cat .pypirc
+
+          python3 setup.py bdist_wheel upload -r rio-innersource-pypi
