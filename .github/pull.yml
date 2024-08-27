@@ -1,0 +1,13 @@
+version: "1"
+rules:                      
+  - base: master           
+    upstream: explosion:master
+    mergeMethod: merge
+    mergeUnstable: false
+    assignees:              # Optional
+      - rolzy-rio
+    reviewers:              # Optional
+      - rolzy-rio
+    conflictReviewers:      # Optional, on merge conflict assign a reviewer
+      - rolzy-rio
+conflictLabel: "merge-conflict"  # Optional, on merge conflict assign a custom label, Default: merge-conflict
