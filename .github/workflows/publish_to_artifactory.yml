@@ -1,6 +1,10 @@
 name: spaCy Python Package Artifactory Publish
 
-on: [workflow_dispatch]
+on: 
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
 
 env:
   ARTIFACTORY_PULL_URL: https://artifactory.riotinto.com/artifactory/api/pypi/riotinto-pypi/simple
