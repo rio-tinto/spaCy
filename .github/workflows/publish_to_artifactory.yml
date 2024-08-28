@@ -15,35 +15,61 @@ permissions:
   contents: read # This is required for actions/checkout
 
 jobs:
-  pypi-consume-and-publish:
-    runs-on: ubuntu-24.04
+  build-wheels:
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v4
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.19.1
+        env:
+          CIBW_SOME_OPTION: value
         with:
-          python-version: '3.12'
-          cache: 'pip'
+          package-dir: .
+          output-dir: wheelhouse
+          config-file: "{package}/pyproject.toml"
 
-      # Install dependencies
-      - name: Installs dependencies
+      - name: Upload wheels as Github artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
+          path: ./wheelhouse/*.whl
+  build-sdist:
+    name: Build source distribution
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build sdist
+        run: pipx run build --sdist
+
+      - name: Upload source dist as Github artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cibw-sdist
+          path: dist/*.tar.gz
+
+  upload-to-artifactory:
+    name: Upload artifacts to artifactory
+    needs: [build-wheels, build-sdist]
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: cibw-*
+          path: dist
+          merge-multiple: true
+
+      - name: Upload to Artifactory
         run: |
-          export PIP_INDEX_URL=https://${{ secrets.GHA_ARTIFACTORY_USERNAME }}:${{ secrets.GHA_ARTIFACTORY_PASSWORD }}@$ARTIFACTORY_PULL_URL
-          python3 -m pip install -U pip setuptools wheel --timeout 90
-          python3 -m pip install -r requirements.txt --timeout 90
-
-      # Build and upload
-      - name: Build and upload
-        run: |
-
-          cat << EOF > $HOME/.pypirc
-          [distutils]
-          index-servers = rio-innersource-pypi
-          [rio-innersource-pypi]
-          repository = $ARTIFACTORY_PUSH_URL
-          username = ${{ secrets.GHA_ARTIFACTORY_USERNAME }}
-          password = ${{ secrets.GHA_ARTIFACTORY_PASSWORD }}
-          EOF
-
-          python3 setup.py bdist_wheel upload -r rio-innersource-pypi
+          twine upload --repository-url $ARTIFACTORY_PUSH_URL dist/* -u${{ secrets.GHA_ARTIFACTORY_USERNAME }} -p${{ secrets.GHA_ARTIFACTORY_PASSWORD }}
