@@ -66,9 +66,10 @@ jobs:
 
       - name: Upload JSON
         run: |
-          curl -v -X PUT \
-          --upload-file compatibility.json \
-          "https://${{ secrets.GHA_ARTIFACTORY_USERNAME}}:${{ secrets.GHA_ARTIFACTORY_PASSWORD }}@artifactory.riotinto.com/artifactory/rio-innersource-pypi/spacy/compatibility.json"
+          curl -X PUT \
+            --user ${{ secrets.GHA_ARTIFACTORY_USERNAME}}:${{ secrets.GHA_ARTIFACTORY_PASSWORD }} \
+            --upload-file compatibility.json \
+            https://artifactory.riotinto.com/artifactory/rio-innersource-pypi/spacy/compatibility.json
 
   upload-to-artifactory:
     name: Upload artifacts to artifactory
