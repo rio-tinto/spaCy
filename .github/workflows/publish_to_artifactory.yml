@@ -9,6 +9,7 @@ on:
 env:
   ARTIFACTORY_PULL_URL: artifactory.riotinto.com/artifactory/api/pypi/riotinto-pypi/simple
   ARTIFACTORY_PUSH_URL: https://artifactory.riotinto.com/artifactory/api/pypi/rio-innersource-pypi
+  SPACY_COMPATIBILITY_URL: https://raw.githubusercontent.com/explosion/spacy-models/master/compatibility.json
 
 permissions:
   id-token: write # This is required for requesting the JWT
@@ -55,6 +56,19 @@ jobs:
         with:
           name: cibw-sdist
           path: dist/*.tar.gz
+
+  upload-compatibility-file-to-artifactory:
+    name: Upload compatibility JSON file to artifactory
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download JSON
+        run: curl $SPACY_COMPATIBILITY_URL -o compatibility.json
+
+      - name: Upload JSON
+        run: |
+          curl -v -X PUT \
+          --upload-file compatibility.json \
+          "https://${{ secrets.GHA_ARTIFACTORY_USERNAME}}:${{ secrets.GHA_ARTIFACTORY_PASSWORD }}@artifactory.riotinto.com/artifactory/rio-innersource-pypi/spacy/compatibility.json"
 
   upload-to-artifactory:
     name: Upload artifacts to artifactory
